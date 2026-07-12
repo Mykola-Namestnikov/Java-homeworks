@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'ua.university'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.release = 21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        events "started", "passed", "skipped", "failed"
+
+        exceptionFormat "full"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                def output = "TEST RESULTS: ${result.resultType} (${result.testCount} tests: ${result.successfulTestCount} successed, ${result.failedTestCount} failed, ${result.skippedTestCount} missed)"
+                def startItem = "|  ", endItem = "  |"
+                def repeatLength = output.length() + startItem.length() + endItem.length()
+
+                println "\n" + "-" * repeatLength
+                println "${startItem}${output}${endItem}"
+                println "-" * repeatLength + "\n"
+            }
+        }
+    }
+}
+
+bootJar {
+    mainClass = 'ua.university.sms.UniversityManagementApplication'
+}
+
+bootRun {
+    mainClass = 'ua.university.sms.UniversityManagementApplication'
+}
+
+tasks.named('resolveMainClassName') {
+    enabled = false
+}
